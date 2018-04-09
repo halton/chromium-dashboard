@@ -1,17 +1,16 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <ChromiumDashboard/>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import ChromiumDashboard from './components/ChromiumDashboard.vue'
 
 export default {
   name: 'app',
   components: {
-    HelloWorld
+    ChromiumDashboard
   }
 }
 </script>
