@@ -10,15 +10,33 @@ These instructions will get you a copy of the project up and running on your loc
 
 Install [Node.js](https://nodejs.org/en/), we suggest to use use [NVM](https://github.com/creationix/nvm) for handy.
 
-### Server Side
-
+### DB server Side
+1. Install MongoDB with instruction of https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
+2. Start MongoDB server
 ```
-cd server
+cd db
+mkdir data
+mongod --dbpath=data
+```
+3. Start GraphQL server
+```
+cd db
 npm install
-npm run server
+npm run start
 ```
 
-### Client Side (TBA)
+4. Test query
+```
+```
+
+### Dashboard Side
+1. Start dashboard
+```
+cd dashboard
+npm install
+npm install --save @angular-devkit/core
+./node_modules/.bin/ng serve
+```
 
 ## License
 
