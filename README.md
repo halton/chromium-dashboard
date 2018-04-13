@@ -26,7 +26,14 @@ npm run start
 ```
 
 4. Test query
+Use browser to visit http://localhost:4000/graphiql or
 ```
+ curl \
+   -X POST \
+   -H "Content-Type: application/json" \
+   --data '{ "query": "query { buildbots { id, url } }" }' \
+   http://localhost:4000/graphql
+
 ```
 
 ### Dashboard Side

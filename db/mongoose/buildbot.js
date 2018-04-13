@@ -1,3 +1,4 @@
+'use strict';
 const mongoose = require('mongoose');
 
 const buildSchema = mongoose.Schema({
@@ -21,11 +22,7 @@ const commitSchema = mongoose.Schema({
   builds: [buildSchema]
 });
 
-const buildbotSchema = mongoose.Schema({
+exports.buildbotSchema = mongoose.Schema({
   url: String,
   commits: [commitSchema]
 });
-
-module.exports = {
-  mongoose.model('Buildbot', buildbotSchema)
-};

@@ -1,11 +1,22 @@
-const { makeExecutableSchema } = require("graphql-tools");
+const { buildbotSchema } = require('./db-schema');
+const { makeExecutableSchema } = require('graphql-tools');
 
-const gql = String.raw;
+const createType = require('mongoose-schema-to-graphql');
+
+const config = {
+  name: 'buildbotType',
+  description: 'Buildbot schema',
+  class: 'GraphQLObjectType',
+  schema: buildbotSchema,
+  exclude: ['_id']
+};
+
+const aaa = createType(config);
+console.log(aaa.toString());
 
 // Some fake data
 const bots = [
   {
-    id: 1,
     url: 'https://github.com/otcshare/chromium-src',
     commits:
     [
@@ -87,14 +98,17 @@ const bots = [
       },
     ],
   },
+  {
+    url: 'https://github.com/halton/chromium-src',
+  }
 ];
 
-const typeDefs = gql`
+
+const typeDefs = `
   type Query {
     buildbots: [Buildbot]
   }
   type Buildbot @cacheControl(maxAge: 60) {
-    id: ID
     url: String
     commits: [Commit]
   }
@@ -119,6 +133,7 @@ const typeDefs = gql`
   }
 `;
 
+
 const resolvers = {
   Query: { buildbots: () => bots },
 };
@@ -129,4 +144,3 @@ const schema = makeExecutableSchema({
 });
 
 module.exports = { schema };
-

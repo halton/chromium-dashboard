@@ -1,7 +1,10 @@
-const GraphQLObjectType = require('graphql').GraphQLObjectType;
-const GraphQLList = require('graphql').GraphQLList;
-const model = require('../../mongoose/buildbot');
-const type = require('../types/buildbot').buildbotType;
+const mongoose = require('mongoose');
+const { buildbotSchema } = require('../../mongoose/buildbot');
+const { buildbotType } = require('../types/buildbot');
+const { GraphQLObjectType, GraphQLList } = require('graphql');
+
+// const schema = new buildbotSchema;
+const model = mongoose.model('Buildbot', buildbotSchema);
 
 // Query
 exports.queryType = new GraphQLObjectType({
@@ -9,7 +12,7 @@ exports.queryType = new GraphQLObjectType({
   fields: function () {
     return {
       buildbots: {
-        type: new GraphQLList(type),
+        type: new GraphQLList(buildbotType),
         resolve: function () {
           const buildbots = model.find().exec()
           if (!buildbots) {
