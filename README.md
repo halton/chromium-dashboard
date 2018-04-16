@@ -1,6 +1,10 @@
-# Build Dashboard
+# Chromium Continuous Build
 
-This is a Node.js based project to setup a Chromium build dashboard for a Git project, it can shows each revision for different build configrations (OS, CPU, GN_Aargs, etc).
+This is a Node.js based project to setup a Chromium continuous build.
+
+The main reason is the chromium build infra is no longer support fork and customize a buildbot, check [here](https://groups.google.com/a/chromium.org/forum/?utm_medium=email&utm_source=footer#!msg/infra-dev/be9lOJo1nY0/7DWppThRBQAJ) for details.
+
+This project will be a low weight of CI system for give chromium git URL.
 
 ## Getting Started
 
@@ -10,28 +14,28 @@ These instructions will get you a copy of the project up and running on your loc
 
 Install [Node.js](https://nodejs.org/en/), we suggest to use use [NVM](https://github.com/creationix/nvm) for handy.
 
-### DB server Side
-1. Install MongoDB with instruction of https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
+### master Side
+1. Install MongoDB with instruction at https://docs.mongodb.com/manual/tutorial/
 2. Start MongoDB server
 ```
-cd db
+cd master
 mkdir data
 mongod --dbpath=data
 ```
 3. Start GraphQL server
 ```
-cd db
+cd master
 npm install
 npm run start
 ```
 
 4. Test query
-Use browser to visit http://localhost:4000/graphiql or
+Use browser to visit http://localhost:4000/graphql or
 ```
  curl \
    -X POST \
    -H "Content-Type: application/json" \
-   --data '{ "query": "query { buildbots { id, url } }" }' \
+   --data '{ "query": "query { buildbots }" }' \
    http://localhost:4000/graphql
 
 ```
