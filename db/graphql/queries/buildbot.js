@@ -1,10 +1,8 @@
-const mongoose = require('mongoose');
-const { buildbotSchema } = require('../../mongoose/buildbot');
-const { buildbotType } = require('../types/buildbot');
-const { GraphQLObjectType, GraphQLList } = require('graphql');
+'use strict';
 
-// const schema = new buildbotSchema;
-const model = mongoose.model('Buildbot', buildbotSchema);
+const { GraphQLObjectType, GraphQLList } = require('graphql');
+const { BuildbotType } = require('../types/buildbot');
+const { BuildbotModel } = require('../../models/buildbot');
 
 // Query
 exports.queryType = new GraphQLObjectType({
@@ -12,9 +10,9 @@ exports.queryType = new GraphQLObjectType({
   fields: function () {
     return {
       buildbots: {
-        type: new GraphQLList(buildbotType),
+        type: new GraphQLList(BuildbotType),
         resolve: function () {
-          const buildbots = model.find().exec()
+          const buildbots = BuildbotModel.find().exec()
           if (!buildbots) {
             throw new Error('Error')
           }
@@ -24,3 +22,4 @@ exports.queryType = new GraphQLObjectType({
     }
   }
 });
+

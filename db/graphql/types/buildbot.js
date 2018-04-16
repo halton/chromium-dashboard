@@ -1,14 +1,15 @@
-'use strict'
+'use strict';
 
-const { buildbotSchema } = require('../../mongoose/buildbot');
+const { BuildbotSchema } = require('../../models/buildbot');
+const { GraphQLObjectType } = require('graphql');
 const createType = require('mongoose-schema-to-graphql');
 
 const config = {
-  name: 'buildbotType',
+  name: 'buildbot',
   description: 'Buildbot schema',
   class: 'GraphQLObjectType',
-  schema: buildbotSchema,
-  exclude: ['_id']
+  schema: BuildbotSchema,
+  exclude: ['__v']
 };
 
-exports.buildbotType = createType(config);
+exports.BuildbotType = createType(config);
