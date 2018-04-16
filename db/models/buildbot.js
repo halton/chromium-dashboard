@@ -1,4 +1,5 @@
 'use strict';
+
 const mongoose = require('mongoose');
 
 const buildSchema = mongoose.Schema({
@@ -22,7 +23,13 @@ const commitSchema = mongoose.Schema({
   builds: [buildSchema]
 });
 
-exports.buildbotSchema = mongoose.Schema({
-  url: String,
+const buildbotSchema = new mongoose.Schema({
+  url: {
+    type: String,
+    required: true
+  },
   commits: [commitSchema]
 });
+
+exports.BuildbotSchema = buildbotSchema;
+exports.BuildbotModel = mongoose.model('Buildbot', buildbotSchema);
