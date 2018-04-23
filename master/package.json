@@ -16,10 +16,12 @@
   "author": "Halton Huo <halton.huo@intel.com>",
   "license": "Apache 2.0",
   "dependencies": {
+    "apollo-server-express": "^1.3.4",
     "cors": "^2.8.4",
     "express": "^4.16.2",
     "express-graphql": "^0.6.11",
     "graphql": "^0.11.7",
+    "graphql-tools": "^2.24.0",
     "mongoose": "^4.13.2",
     "mongoose-schema-to-graphql": "^2.7.2"
   }

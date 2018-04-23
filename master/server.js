@@ -1,24 +1,18 @@
 'use strict';
 
 const express = require("express");
+const bodyParser = require('body-parser');
+const { graphqlExpress, graphiqlExpress } = require('apollo-server-express');
 const mongoose = require('./config/mongoose');
-const graphqlHTTP = require("express-graphql");
-const cors = require("cors");
-const db = mongoose();
-const app = express();
+const schema = require('./graphql/schema');
 
 const PORT = process.env.PORT || 4000;
 
-app.use('*', cors());
+const db = mongoose();
+const app = express();
 
-const buildbotSchema = require('./graphql/index').buildbotSchema;
-app.use('/graphql', cors(), graphqlHTTP({
-  schema: buildbotSchema,
-  rootValue: global,
-  graphiql: true
-}));
-
-// Up and Running at Port 4000
+app.use('/graphql', bodyParser.json(), graphqlExpress(schema));
+app.use('/graphiql', graphiqlExpress({endpointURL: '/graphql'}));
 app.listen(PORT, () => {
-  console.log(`Go to http://localhost:${PORT}/graphql to run queries!`);
+  console.log(`Go to http://localhost:${PORT}/graphiql to run queries!`);
 });

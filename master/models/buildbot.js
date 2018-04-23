@@ -13,6 +13,8 @@ const buildSchema = mongoose.Schema({
   log: String,
   download: String
 });
+exports.BuildSchema = buildSchema;
+exports.BuildModel = mongoose.model('Build', buildSchema);
 
 const commitSchema = mongoose.Schema({
   revision: String,
@@ -22,6 +24,9 @@ const commitSchema = mongoose.Schema({
   message: String,
   builds: [buildSchema]
 });
+
+exports.CommitSchema = commitSchema;
+exports.CommitModel = mongoose.model('Commit', commitSchema);
 
 const buildbotSchema = new mongoose.Schema({
   url: {

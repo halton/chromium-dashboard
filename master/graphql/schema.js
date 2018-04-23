@@ -1,23 +1,14 @@
-const { buildbotSchema } = require('./db-schema');
+'use strict';
+
 const { makeExecutableSchema } = require('graphql-tools');
-
-const createType = require('mongoose-schema-to-graphql');
-
-const config = {
-  name: 'buildbotType',
-  description: 'Buildbot schema',
-  class: 'GraphQLObjectType',
-  schema: buildbotSchema,
-  exclude: ['_id']
-};
-
-const aaa = createType(config);
-console.log(aaa.toString());
+const { find, filter } = require('lodash');
 
 // Some fake data
 const bots = [
   {
     url: 'https://github.com/otcshare/chromium-src',
+    branch: 'webml',
+    beginWith: null,
     commits:
     [
       {
@@ -100,20 +91,25 @@ const bots = [
   },
   {
     url: 'https://github.com/halton/chromium-src',
+    branch: 'webml',
+    beginWith: null,
+    commits: [],
   }
 ];
 
-
 const typeDefs = `
   type Query {
-    buildbots: [Buildbot]
+    buildbots: [Buildbot],
+    buildbot(url: String!): Buildbot
   }
   type Buildbot @cacheControl(maxAge: 60) {
-    url: String
+    url: String!
+    branch: String
+    beginWith: String
     commits: [Commit]
   }
   type Commit @cacheControl(maxAge: 60) {
-    revision: String
+    revision: String!
     url: String
     author: String
     date: String
@@ -131,11 +127,21 @@ const typeDefs = `
     log: String
     download: String
   }
+  type Mutation {
+    addBuildbot (
+      url: String!,
+      branch: String,
+      beginWith: String,
+    ): Buildbot
+  }
 `;
 
 
 const resolvers = {
-  Query: { buildbots: () => bots },
+  Query: {
+    buildbots: () => bots,
+    buildbot: (_, { url }) => find(bots, { url }),
+  },
 };
 
 const schema = makeExecutableSchema({

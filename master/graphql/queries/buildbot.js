@@ -12,11 +12,11 @@ exports.queryType = new GraphQLObjectType({
       buildbots: {
         type: new GraphQLList(BuildbotType),
         resolve: function () {
-          const buildbots = BuildbotModel.find().exec()
+          const buildbots = BuildbotModel.find().exec();
           if (!buildbots) {
-            throw new Error('Error')
+            throw new Error('Error');
           }
-          return buildbots
+          return buildbots;
         }
       }
     }
