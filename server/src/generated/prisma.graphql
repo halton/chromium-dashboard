@@ -5,11 +5,37 @@
 # Model Types
 #
 
-type Post implements Node {
+type Build implements Node {
   id: ID!
-  isPublished: Boolean!
-  title: String!
-  text: String!
+  name: String!
+  succeed: Boolean!
+  date: DateTime!
+  duration: Int
+  targetCpu: String!
+  targetOs: String!
+  gnArgs: String!
+  logUrl: String
+  downloadUrl: String
+  commit(where: CommitWhereInput): Commit
+}
+
+type ChromiumSource implements Node {
+  id: ID!
+  url: String!
+  branch: String!
+  beginWith: String
+  commits(where: CommitWhereInput, orderBy: CommitOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Commit!]
+}
+
+type Commit implements Node {
+  id: ID!
+  revision: String!
+  author: String
+  date: DateTime
+  message: String
+  url: String!
+  chromiumSource(where: ChromiumSourceWhereInput): ChromiumSource
+  builds(where: BuildWhereInput, orderBy: BuildOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Build!]
 }
 
 
@@ -17,7 +43,15 @@ type Post implements Node {
 # Other Types
 #
 
-type AggregatePost {
+type AggregateBuild {
+  count: Int!
+}
+
+type AggregateChromiumSource {
+  count: Int!
+}
+
+type AggregateCommit {
   count: Int!
 }
 
@@ -29,62 +63,9 @@ type BatchPayload {
 }
 
 """
-The `Long` scalar type represents non-fractional signed whole numeric values.
-Long can represent values between -(2^63) and 2^63 - 1.
-"""
-scalar Long
-
-type Mutation {
-  createPost(data: PostCreateInput!): Post!
-  updatePost(data: PostUpdateInput!, where: PostWhereUniqueInput!): Post
-  deletePost(where: PostWhereUniqueInput!): Post
-  upsertPost(where: PostWhereUniqueInput!, create: PostCreateInput!, update: PostUpdateInput!): Post!
-  updateManyPosts(data: PostUpdateInput!, where: PostWhereInput): BatchPayload!
-  deleteManyPosts(where: PostWhereInput): BatchPayload!
-}
-
-enum MutationType {
-  CREATED
-  UPDATED
-  DELETED
-}
-
-"""
-An object with an ID
-"""
-interface Node {
-  """
-  The id of the object.
-  """
-  id: ID!
-}
-
-"""
-Information about pagination in a connection.
-"""
-type PageInfo {
-  """
-  When paginating forwards, are there more items?
-  """
-  hasNextPage: Boolean!
-  """
-  When paginating backwards, are there more items?
-  """
-  hasPreviousPage: Boolean!
-  """
-  When paginating backwards, the cursor to continue.
-  """
-  startCursor: String
-  """
-  When paginating forwards, the cursor to continue.
-  """
-  endCursor: String
-}
-
-"""
 A connection to a list of items.
 """
-type PostConnection {
+type BuildConnection {
   """
   Information to aid in pagination.
   """
@@ -92,68 +73,110 @@ type PostConnection {
   """
   A list of edges.
   """
-  edges: [PostEdge]!
-  aggregate: AggregatePost!
+  edges: [BuildEdge]!
+  aggregate: AggregateBuild!
 }
 
-input PostCreateInput {
-  isPublished: Boolean
-  title: String!
-  text: String!
+input BuildCreateInput {
+  name: String!
+  succeed: Boolean!
+  date: DateTime!
+  duration: Int
+  targetCpu: String!
+  targetOs: String!
+  gnArgs: String!
+  logUrl: String
+  downloadUrl: String
+  commit: CommitCreateOneWithoutBuildsInput
+}
+
+input BuildCreateManyWithoutCommitInput {
+  create: [BuildCreateWithoutCommitInput!]
+  connect: [BuildWhereUniqueInput!]
+}
+
+input BuildCreateWithoutCommitInput {
+  name: String!
+  succeed: Boolean!
+  date: DateTime!
+  duration: Int
+  targetCpu: String!
+  targetOs: String!
+  gnArgs: String!
+  logUrl: String
+  downloadUrl: String
 }
 
 """
 An edge in a connection.
 """
-type PostEdge {
+type BuildEdge {
   """
   The item at the end of the edge.
   """
-  node: Post!
+  node: Build!
   """
   A cursor for use in pagination.
   """
   cursor: String!
 }
 
-enum PostOrderByInput {
+enum BuildOrderByInput {
   id_ASC
   id_DESC
-  isPublished_ASC
-  isPublished_DESC
-  title_ASC
-  title_DESC
-  text_ASC
-  text_DESC
+  name_ASC
+  name_DESC
+  succeed_ASC
+  succeed_DESC
+  date_ASC
+  date_DESC
+  duration_ASC
+  duration_DESC
+  targetCpu_ASC
+  targetCpu_DESC
+  targetOs_ASC
+  targetOs_DESC
+  gnArgs_ASC
+  gnArgs_DESC
+  logUrl_ASC
+  logUrl_DESC
+  downloadUrl_ASC
+  downloadUrl_DESC
   updatedAt_ASC
   updatedAt_DESC
   createdAt_ASC
   createdAt_DESC
 }
 
-type PostPreviousValues {
+type BuildPreviousValues {
   id: ID!
-  isPublished: Boolean!
-  title: String!
-  text: String!
+  name: String!
+  succeed: Boolean!
+  date: DateTime!
+  duration: Int
+  targetCpu: String!
+  targetOs: String!
+  gnArgs: String!
+  logUrl: String
+  downloadUrl: String
 }
 
-type PostSubscriptionPayload {
+type BuildSubscriptionPayload {
   mutation: MutationType!
-  node: Post
+  node: Build
   updatedFields: [String!]
-  previousValues: PostPreviousValues
+  previousValues: BuildPreviousValues
 }
 
-input PostSubscriptionWhereInput {
+input BuildSubscriptionWhereInput {
   """
   Logical AND on all given filters.
   """
-  AND: [PostSubscriptionWhereInput!]
+  AND: [BuildSubscriptionWhereInput!]
   """
   Logical OR on all given filters.
   """
-  OR: [PostSubscriptionWhereInput!]
+  OR: [BuildSubscriptionWhereInput!]
   """
   The subscription event gets dispatched when it's listed in mutation_in
   """
@@ -170,24 +193,63 @@ input PostSubscriptionWhereInput {
   The subscription event gets only dispatched when some of the field names included in this list have been updated
   """
   updatedFields_contains_some: [String!]
-  node: PostWhereInput
+  node: BuildWhereInput
 }
 
-input PostUpdateInput {
-  isPublished: Boolean
-  title: String
-  text: String
+input BuildUpdateInput {
+  name: String
+  succeed: Boolean
+  date: DateTime
+  duration: Int
+  targetCpu: String
+  targetOs: String
+  gnArgs: String
+  logUrl: String
+  downloadUrl: String
+  commit: CommitUpdateOneWithoutBuildsInput
 }
 
-input PostWhereInput {
+input BuildUpdateManyWithoutCommitInput {
+  create: [BuildCreateWithoutCommitInput!]
+  connect: [BuildWhereUniqueInput!]
+  disconnect: [BuildWhereUniqueInput!]
+  delete: [BuildWhereUniqueInput!]
+  update: [BuildUpdateWithWhereUniqueWithoutCommitInput!]
+  upsert: [BuildUpsertWithWhereUniqueWithoutCommitInput!]
+}
+
+input BuildUpdateWithoutCommitDataInput {
+  name: String
+  succeed: Boolean
+  date: DateTime
+  duration: Int
+  targetCpu: String
+  targetOs: String
+  gnArgs: String
+  logUrl: String
+  downloadUrl: String
+}
+
+input BuildUpdateWithWhereUniqueWithoutCommitInput {
+  where: BuildWhereUniqueInput!
+  data: BuildUpdateWithoutCommitDataInput!
+}
+
+input BuildUpsertWithWhereUniqueWithoutCommitInput {
+  where: BuildWhereUniqueInput!
+  update: BuildUpdateWithoutCommitDataInput!
+  create: BuildCreateWithoutCommitInput!
+}
+
+input BuildWhereInput {
   """
   Logical AND on all given filters.
   """
-  AND: [PostWhereInput!]
+  AND: [BuildWhereInput!]
   """
   Logical OR on all given filters.
   """
-  OR: [PostWhereInput!]
+  OR: [BuildWhereInput!]
   id: ID
   """
   All values that are not equal to given value.
@@ -241,127 +303,1337 @@ input PostWhereInput {
   All values not ending with the given string.
   """
   id_not_ends_with: ID
-  isPublished: Boolean
+  name: String
   """
   All values that are not equal to given value.
   """
-  isPublished_not: Boolean
-  title: String
-  """
-  All values that are not equal to given value.
-  """
-  title_not: String
+  name_not: String
   """
   All values that are contained in given list.
   """
-  title_in: [String!]
+  name_in: [String!]
   """
   All values that are not contained in given list.
   """
-  title_not_in: [String!]
+  name_not_in: [String!]
   """
   All values less than the given value.
   """
-  title_lt: String
+  name_lt: String
   """
   All values less than or equal the given value.
   """
-  title_lte: String
+  name_lte: String
   """
   All values greater than the given value.
   """
-  title_gt: String
+  name_gt: String
   """
   All values greater than or equal the given value.
   """
-  title_gte: String
+  name_gte: String
   """
   All values containing the given string.
   """
-  title_contains: String
+  name_contains: String
   """
   All values not containing the given string.
   """
-  title_not_contains: String
+  name_not_contains: String
   """
   All values starting with the given string.
   """
-  title_starts_with: String
+  name_starts_with: String
   """
   All values not starting with the given string.
   """
-  title_not_starts_with: String
+  name_not_starts_with: String
   """
   All values ending with the given string.
   """
-  title_ends_with: String
+  name_ends_with: String
   """
   All values not ending with the given string.
   """
-  title_not_ends_with: String
-  text: String
+  name_not_ends_with: String
+  succeed: Boolean
   """
   All values that are not equal to given value.
   """
-  text_not: String
+  succeed_not: Boolean
+  date: DateTime
+  """
+  All values that are not equal to given value.
+  """
+  date_not: DateTime
   """
   All values that are contained in given list.
   """
-  text_in: [String!]
+  date_in: [DateTime!]
   """
   All values that are not contained in given list.
   """
-  text_not_in: [String!]
+  date_not_in: [DateTime!]
   """
   All values less than the given value.
   """
-  text_lt: String
+  date_lt: DateTime
   """
   All values less than or equal the given value.
   """
-  text_lte: String
+  date_lte: DateTime
   """
   All values greater than the given value.
   """
-  text_gt: String
+  date_gt: DateTime
   """
   All values greater than or equal the given value.
   """
-  text_gte: String
+  date_gte: DateTime
+  duration: Int
+  """
+  All values that are not equal to given value.
+  """
+  duration_not: Int
+  """
+  All values that are contained in given list.
+  """
+  duration_in: [Int!]
+  """
+  All values that are not contained in given list.
+  """
+  duration_not_in: [Int!]
+  """
+  All values less than the given value.
+  """
+  duration_lt: Int
+  """
+  All values less than or equal the given value.
+  """
+  duration_lte: Int
+  """
+  All values greater than the given value.
+  """
+  duration_gt: Int
+  """
+  All values greater than or equal the given value.
+  """
+  duration_gte: Int
+  targetCpu: String
+  """
+  All values that are not equal to given value.
+  """
+  targetCpu_not: String
+  """
+  All values that are contained in given list.
+  """
+  targetCpu_in: [String!]
+  """
+  All values that are not contained in given list.
+  """
+  targetCpu_not_in: [String!]
+  """
+  All values less than the given value.
+  """
+  targetCpu_lt: String
+  """
+  All values less than or equal the given value.
+  """
+  targetCpu_lte: String
+  """
+  All values greater than the given value.
+  """
+  targetCpu_gt: String
+  """
+  All values greater than or equal the given value.
+  """
+  targetCpu_gte: String
   """
   All values containing the given string.
   """
-  text_contains: String
+  targetCpu_contains: String
   """
   All values not containing the given string.
   """
-  text_not_contains: String
+  targetCpu_not_contains: String
   """
   All values starting with the given string.
   """
-  text_starts_with: String
+  targetCpu_starts_with: String
   """
   All values not starting with the given string.
   """
-  text_not_starts_with: String
+  targetCpu_not_starts_with: String
   """
   All values ending with the given string.
   """
-  text_ends_with: String
+  targetCpu_ends_with: String
   """
   All values not ending with the given string.
   """
-  text_not_ends_with: String
+  targetCpu_not_ends_with: String
+  targetOs: String
+  """
+  All values that are not equal to given value.
+  """
+  targetOs_not: String
+  """
+  All values that are contained in given list.
+  """
+  targetOs_in: [String!]
+  """
+  All values that are not contained in given list.
+  """
+  targetOs_not_in: [String!]
+  """
+  All values less than the given value.
+  """
+  targetOs_lt: String
+  """
+  All values less than or equal the given value.
+  """
+  targetOs_lte: String
+  """
+  All values greater than the given value.
+  """
+  targetOs_gt: String
+  """
+  All values greater than or equal the given value.
+  """
+  targetOs_gte: String
+  """
+  All values containing the given string.
+  """
+  targetOs_contains: String
+  """
+  All values not containing the given string.
+  """
+  targetOs_not_contains: String
+  """
+  All values starting with the given string.
+  """
+  targetOs_starts_with: String
+  """
+  All values not starting with the given string.
+  """
+  targetOs_not_starts_with: String
+  """
+  All values ending with the given string.
+  """
+  targetOs_ends_with: String
+  """
+  All values not ending with the given string.
+  """
+  targetOs_not_ends_with: String
+  gnArgs: String
+  """
+  All values that are not equal to given value.
+  """
+  gnArgs_not: String
+  """
+  All values that are contained in given list.
+  """
+  gnArgs_in: [String!]
+  """
+  All values that are not contained in given list.
+  """
+  gnArgs_not_in: [String!]
+  """
+  All values less than the given value.
+  """
+  gnArgs_lt: String
+  """
+  All values less than or equal the given value.
+  """
+  gnArgs_lte: String
+  """
+  All values greater than the given value.
+  """
+  gnArgs_gt: String
+  """
+  All values greater than or equal the given value.
+  """
+  gnArgs_gte: String
+  """
+  All values containing the given string.
+  """
+  gnArgs_contains: String
+  """
+  All values not containing the given string.
+  """
+  gnArgs_not_contains: String
+  """
+  All values starting with the given string.
+  """
+  gnArgs_starts_with: String
+  """
+  All values not starting with the given string.
+  """
+  gnArgs_not_starts_with: String
+  """
+  All values ending with the given string.
+  """
+  gnArgs_ends_with: String
+  """
+  All values not ending with the given string.
+  """
+  gnArgs_not_ends_with: String
+  logUrl: String
+  """
+  All values that are not equal to given value.
+  """
+  logUrl_not: String
+  """
+  All values that are contained in given list.
+  """
+  logUrl_in: [String!]
+  """
+  All values that are not contained in given list.
+  """
+  logUrl_not_in: [String!]
+  """
+  All values less than the given value.
+  """
+  logUrl_lt: String
+  """
+  All values less than or equal the given value.
+  """
+  logUrl_lte: String
+  """
+  All values greater than the given value.
+  """
+  logUrl_gt: String
+  """
+  All values greater than or equal the given value.
+  """
+  logUrl_gte: String
+  """
+  All values containing the given string.
+  """
+  logUrl_contains: String
+  """
+  All values not containing the given string.
+  """
+  logUrl_not_contains: String
+  """
+  All values starting with the given string.
+  """
+  logUrl_starts_with: String
+  """
+  All values not starting with the given string.
+  """
+  logUrl_not_starts_with: String
+  """
+  All values ending with the given string.
+  """
+  logUrl_ends_with: String
+  """
+  All values not ending with the given string.
+  """
+  logUrl_not_ends_with: String
+  downloadUrl: String
+  """
+  All values that are not equal to given value.
+  """
+  downloadUrl_not: String
+  """
+  All values that are contained in given list.
+  """
+  downloadUrl_in: [String!]
+  """
+  All values that are not contained in given list.
+  """
+  downloadUrl_not_in: [String!]
+  """
+  All values less than the given value.
+  """
+  downloadUrl_lt: String
+  """
+  All values less than or equal the given value.
+  """
+  downloadUrl_lte: String
+  """
+  All values greater than the given value.
+  """
+  downloadUrl_gt: String
+  """
+  All values greater than or equal the given value.
+  """
+  downloadUrl_gte: String
+  """
+  All values containing the given string.
+  """
+  downloadUrl_contains: String
+  """
+  All values not containing the given string.
+  """
+  downloadUrl_not_contains: String
+  """
+  All values starting with the given string.
+  """
+  downloadUrl_starts_with: String
+  """
+  All values not starting with the given string.
+  """
+  downloadUrl_not_starts_with: String
+  """
+  All values ending with the given string.
+  """
+  downloadUrl_ends_with: String
+  """
+  All values not ending with the given string.
+  """
+  downloadUrl_not_ends_with: String
+  commit: CommitWhereInput
 }
 
-input PostWhereUniqueInput {
+input BuildWhereUniqueInput {
   id: ID
 }
 
+"""
+A connection to a list of items.
+"""
+type ChromiumSourceConnection {
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+  """
+  A list of edges.
+  """
+  edges: [ChromiumSourceEdge]!
+  aggregate: AggregateChromiumSource!
+}
+
+input ChromiumSourceCreateInput {
+  url: String
+  branch: String
+  beginWith: String
+  commits: CommitCreateManyWithoutChromiumSourceInput
+}
+
+input ChromiumSourceCreateOneWithoutCommitsInput {
+  create: ChromiumSourceCreateWithoutCommitsInput
+  connect: ChromiumSourceWhereUniqueInput
+}
+
+input ChromiumSourceCreateWithoutCommitsInput {
+  url: String
+  branch: String
+  beginWith: String
+}
+
+"""
+An edge in a connection.
+"""
+type ChromiumSourceEdge {
+  """
+  The item at the end of the edge.
+  """
+  node: ChromiumSource!
+  """
+  A cursor for use in pagination.
+  """
+  cursor: String!
+}
+
+enum ChromiumSourceOrderByInput {
+  id_ASC
+  id_DESC
+  url_ASC
+  url_DESC
+  branch_ASC
+  branch_DESC
+  beginWith_ASC
+  beginWith_DESC
+  updatedAt_ASC
+  updatedAt_DESC
+  createdAt_ASC
+  createdAt_DESC
+}
+
+type ChromiumSourcePreviousValues {
+  id: ID!
+  url: String!
+  branch: String!
+  beginWith: String
+}
+
+type ChromiumSourceSubscriptionPayload {
+  mutation: MutationType!
+  node: ChromiumSource
+  updatedFields: [String!]
+  previousValues: ChromiumSourcePreviousValues
+}
+
+input ChromiumSourceSubscriptionWhereInput {
+  """
+  Logical AND on all given filters.
+  """
+  AND: [ChromiumSourceSubscriptionWhereInput!]
+  """
+  Logical OR on all given filters.
+  """
+  OR: [ChromiumSourceSubscriptionWhereInput!]
+  """
+  The subscription event gets dispatched when it's listed in mutation_in
+  """
+  mutation_in: [MutationType!]
+  """
+  The subscription event gets only dispatched when one of the updated fields names is included in this list
+  """
+  updatedFields_contains: String
+  """
+  The subscription event gets only dispatched when all of the field names included in this list have been updated
+  """
+  updatedFields_contains_every: [String!]
+  """
+  The subscription event gets only dispatched when some of the field names included in this list have been updated
+  """
+  updatedFields_contains_some: [String!]
+  node: ChromiumSourceWhereInput
+}
+
+input ChromiumSourceUpdateInput {
+  url: String
+  branch: String
+  beginWith: String
+  commits: CommitUpdateManyWithoutChromiumSourceInput
+}
+
+input ChromiumSourceUpdateOneWithoutCommitsInput {
+  create: ChromiumSourceCreateWithoutCommitsInput
+  connect: ChromiumSourceWhereUniqueInput
+  disconnect: Boolean
+  delete: Boolean
+  update: ChromiumSourceUpdateWithoutCommitsDataInput
+  upsert: ChromiumSourceUpsertWithoutCommitsInput
+}
+
+input ChromiumSourceUpdateWithoutCommitsDataInput {
+  url: String
+  branch: String
+  beginWith: String
+}
+
+input ChromiumSourceUpsertWithoutCommitsInput {
+  update: ChromiumSourceUpdateWithoutCommitsDataInput!
+  create: ChromiumSourceCreateWithoutCommitsInput!
+}
+
+input ChromiumSourceWhereInput {
+  """
+  Logical AND on all given filters.
+  """
+  AND: [ChromiumSourceWhereInput!]
+  """
+  Logical OR on all given filters.
+  """
+  OR: [ChromiumSourceWhereInput!]
+  id: ID
+  """
+  All values that are not equal to given value.
+  """
+  id_not: ID
+  """
+  All values that are contained in given list.
+  """
+  id_in: [ID!]
+  """
+  All values that are not contained in given list.
+  """
+  id_not_in: [ID!]
+  """
+  All values less than the given value.
+  """
+  id_lt: ID
+  """
+  All values less than or equal the given value.
+  """
+  id_lte: ID
+  """
+  All values greater than the given value.
+  """
+  id_gt: ID
+  """
+  All values greater than or equal the given value.
+  """
+  id_gte: ID
+  """
+  All values containing the given string.
+  """
+  id_contains: ID
+  """
+  All values not containing the given string.
+  """
+  id_not_contains: ID
+  """
+  All values starting with the given string.
+  """
+  id_starts_with: ID
+  """
+  All values not starting with the given string.
+  """
+  id_not_starts_with: ID
+  """
+  All values ending with the given string.
+  """
+  id_ends_with: ID
+  """
+  All values not ending with the given string.
+  """
+  id_not_ends_with: ID
+  url: String
+  """
+  All values that are not equal to given value.
+  """
+  url_not: String
+  """
+  All values that are contained in given list.
+  """
+  url_in: [String!]
+  """
+  All values that are not contained in given list.
+  """
+  url_not_in: [String!]
+  """
+  All values less than the given value.
+  """
+  url_lt: String
+  """
+  All values less than or equal the given value.
+  """
+  url_lte: String
+  """
+  All values greater than the given value.
+  """
+  url_gt: String
+  """
+  All values greater than or equal the given value.
+  """
+  url_gte: String
+  """
+  All values containing the given string.
+  """
+  url_contains: String
+  """
+  All values not containing the given string.
+  """
+  url_not_contains: String
+  """
+  All values starting with the given string.
+  """
+  url_starts_with: String
+  """
+  All values not starting with the given string.
+  """
+  url_not_starts_with: String
+  """
+  All values ending with the given string.
+  """
+  url_ends_with: String
+  """
+  All values not ending with the given string.
+  """
+  url_not_ends_with: String
+  branch: String
+  """
+  All values that are not equal to given value.
+  """
+  branch_not: String
+  """
+  All values that are contained in given list.
+  """
+  branch_in: [String!]
+  """
+  All values that are not contained in given list.
+  """
+  branch_not_in: [String!]
+  """
+  All values less than the given value.
+  """
+  branch_lt: String
+  """
+  All values less than or equal the given value.
+  """
+  branch_lte: String
+  """
+  All values greater than the given value.
+  """
+  branch_gt: String
+  """
+  All values greater than or equal the given value.
+  """
+  branch_gte: String
+  """
+  All values containing the given string.
+  """
+  branch_contains: String
+  """
+  All values not containing the given string.
+  """
+  branch_not_contains: String
+  """
+  All values starting with the given string.
+  """
+  branch_starts_with: String
+  """
+  All values not starting with the given string.
+  """
+  branch_not_starts_with: String
+  """
+  All values ending with the given string.
+  """
+  branch_ends_with: String
+  """
+  All values not ending with the given string.
+  """
+  branch_not_ends_with: String
+  beginWith: String
+  """
+  All values that are not equal to given value.
+  """
+  beginWith_not: String
+  """
+  All values that are contained in given list.
+  """
+  beginWith_in: [String!]
+  """
+  All values that are not contained in given list.
+  """
+  beginWith_not_in: [String!]
+  """
+  All values less than the given value.
+  """
+  beginWith_lt: String
+  """
+  All values less than or equal the given value.
+  """
+  beginWith_lte: String
+  """
+  All values greater than the given value.
+  """
+  beginWith_gt: String
+  """
+  All values greater than or equal the given value.
+  """
+  beginWith_gte: String
+  """
+  All values containing the given string.
+  """
+  beginWith_contains: String
+  """
+  All values not containing the given string.
+  """
+  beginWith_not_contains: String
+  """
+  All values starting with the given string.
+  """
+  beginWith_starts_with: String
+  """
+  All values not starting with the given string.
+  """
+  beginWith_not_starts_with: String
+  """
+  All values ending with the given string.
+  """
+  beginWith_ends_with: String
+  """
+  All values not ending with the given string.
+  """
+  beginWith_not_ends_with: String
+  commits_every: CommitWhereInput
+  commits_some: CommitWhereInput
+  commits_none: CommitWhereInput
+}
+
+input ChromiumSourceWhereUniqueInput {
+  id: ID
+}
+
+"""
+A connection to a list of items.
+"""
+type CommitConnection {
+  """
+  Information to aid in pagination.
+  """
+  pageInfo: PageInfo!
+  """
+  A list of edges.
+  """
+  edges: [CommitEdge]!
+  aggregate: AggregateCommit!
+}
+
+input CommitCreateInput {
+  revision: String!
+  author: String
+  date: DateTime
+  message: String
+  url: String!
+  chromiumSource: ChromiumSourceCreateOneWithoutCommitsInput
+  builds: BuildCreateManyWithoutCommitInput
+}
+
+input CommitCreateManyWithoutChromiumSourceInput {
+  create: [CommitCreateWithoutChromiumSourceInput!]
+  connect: [CommitWhereUniqueInput!]
+}
+
+input CommitCreateOneWithoutBuildsInput {
+  create: CommitCreateWithoutBuildsInput
+  connect: CommitWhereUniqueInput
+}
+
+input CommitCreateWithoutBuildsInput {
+  revision: String!
+  author: String
+  date: DateTime
+  message: String
+  url: String!
+  chromiumSource: ChromiumSourceCreateOneWithoutCommitsInput
+}
+
+input CommitCreateWithoutChromiumSourceInput {
+  revision: String!
+  author: String
+  date: DateTime
+  message: String
+  url: String!
+  builds: BuildCreateManyWithoutCommitInput
+}
+
+"""
+An edge in a connection.
+"""
+type CommitEdge {
+  """
+  The item at the end of the edge.
+  """
+  node: Commit!
+  """
+  A cursor for use in pagination.
+  """
+  cursor: String!
+}
+
+enum CommitOrderByInput {
+  id_ASC
+  id_DESC
+  revision_ASC
+  revision_DESC
+  author_ASC
+  author_DESC
+  date_ASC
+  date_DESC
+  message_ASC
+  message_DESC
+  url_ASC
+  url_DESC
+  updatedAt_ASC
+  updatedAt_DESC
+  createdAt_ASC
+  createdAt_DESC
+}
+
+type CommitPreviousValues {
+  id: ID!
+  revision: String!
+  author: String
+  date: DateTime
+  message: String
+  url: String!
+}
+
+type CommitSubscriptionPayload {
+  mutation: MutationType!
+  node: Commit
+  updatedFields: [String!]
+  previousValues: CommitPreviousValues
+}
+
+input CommitSubscriptionWhereInput {
+  """
+  Logical AND on all given filters.
+  """
+  AND: [CommitSubscriptionWhereInput!]
+  """
+  Logical OR on all given filters.
+  """
+  OR: [CommitSubscriptionWhereInput!]
+  """
+  The subscription event gets dispatched when it's listed in mutation_in
+  """
+  mutation_in: [MutationType!]
+  """
+  The subscription event gets only dispatched when one of the updated fields names is included in this list
+  """
+  updatedFields_contains: String
+  """
+  The subscription event gets only dispatched when all of the field names included in this list have been updated
+  """
+  updatedFields_contains_every: [String!]
+  """
+  The subscription event gets only dispatched when some of the field names included in this list have been updated
+  """
+  updatedFields_contains_some: [String!]
+  node: CommitWhereInput
+}
+
+input CommitUpdateInput {
+  revision: String
+  author: String
+  date: DateTime
+  message: String
+  url: String
+  chromiumSource: ChromiumSourceUpdateOneWithoutCommitsInput
+  builds: BuildUpdateManyWithoutCommitInput
+}
+
+input CommitUpdateManyWithoutChromiumSourceInput {
+  create: [CommitCreateWithoutChromiumSourceInput!]
+  connect: [CommitWhereUniqueInput!]
+  disconnect: [CommitWhereUniqueInput!]
+  delete: [CommitWhereUniqueInput!]
+  update: [CommitUpdateWithWhereUniqueWithoutChromiumSourceInput!]
+  upsert: [CommitUpsertWithWhereUniqueWithoutChromiumSourceInput!]
+}
+
+input CommitUpdateOneWithoutBuildsInput {
+  create: CommitCreateWithoutBuildsInput
+  connect: CommitWhereUniqueInput
+  disconnect: Boolean
+  delete: Boolean
+  update: CommitUpdateWithoutBuildsDataInput
+  upsert: CommitUpsertWithoutBuildsInput
+}
+
+input CommitUpdateWithoutBuildsDataInput {
+  revision: String
+  author: String
+  date: DateTime
+  message: String
+  url: String
+  chromiumSource: ChromiumSourceUpdateOneWithoutCommitsInput
+}
+
+input CommitUpdateWithoutChromiumSourceDataInput {
+  revision: String
+  author: String
+  date: DateTime
+  message: String
+  url: String
+  builds: BuildUpdateManyWithoutCommitInput
+}
+
+input CommitUpdateWithWhereUniqueWithoutChromiumSourceInput {
+  where: CommitWhereUniqueInput!
+  data: CommitUpdateWithoutChromiumSourceDataInput!
+}
+
+input CommitUpsertWithoutBuildsInput {
+  update: CommitUpdateWithoutBuildsDataInput!
+  create: CommitCreateWithoutBuildsInput!
+}
+
+input CommitUpsertWithWhereUniqueWithoutChromiumSourceInput {
+  where: CommitWhereUniqueInput!
+  update: CommitUpdateWithoutChromiumSourceDataInput!
+  create: CommitCreateWithoutChromiumSourceInput!
+}
+
+input CommitWhereInput {
+  """
+  Logical AND on all given filters.
+  """
+  AND: [CommitWhereInput!]
+  """
+  Logical OR on all given filters.
+  """
+  OR: [CommitWhereInput!]
+  id: ID
+  """
+  All values that are not equal to given value.
+  """
+  id_not: ID
+  """
+  All values that are contained in given list.
+  """
+  id_in: [ID!]
+  """
+  All values that are not contained in given list.
+  """
+  id_not_in: [ID!]
+  """
+  All values less than the given value.
+  """
+  id_lt: ID
+  """
+  All values less than or equal the given value.
+  """
+  id_lte: ID
+  """
+  All values greater than the given value.
+  """
+  id_gt: ID
+  """
+  All values greater than or equal the given value.
+  """
+  id_gte: ID
+  """
+  All values containing the given string.
+  """
+  id_contains: ID
+  """
+  All values not containing the given string.
+  """
+  id_not_contains: ID
+  """
+  All values starting with the given string.
+  """
+  id_starts_with: ID
+  """
+  All values not starting with the given string.
+  """
+  id_not_starts_with: ID
+  """
+  All values ending with the given string.
+  """
+  id_ends_with: ID
+  """
+  All values not ending with the given string.
+  """
+  id_not_ends_with: ID
+  revision: String
+  """
+  All values that are not equal to given value.
+  """
+  revision_not: String
+  """
+  All values that are contained in given list.
+  """
+  revision_in: [String!]
+  """
+  All values that are not contained in given list.
+  """
+  revision_not_in: [String!]
+  """
+  All values less than the given value.
+  """
+  revision_lt: String
+  """
+  All values less than or equal the given value.
+  """
+  revision_lte: String
+  """
+  All values greater than the given value.
+  """
+  revision_gt: String
+  """
+  All values greater than or equal the given value.
+  """
+  revision_gte: String
+  """
+  All values containing the given string.
+  """
+  revision_contains: String
+  """
+  All values not containing the given string.
+  """
+  revision_not_contains: String
+  """
+  All values starting with the given string.
+  """
+  revision_starts_with: String
+  """
+  All values not starting with the given string.
+  """
+  revision_not_starts_with: String
+  """
+  All values ending with the given string.
+  """
+  revision_ends_with: String
+  """
+  All values not ending with the given string.
+  """
+  revision_not_ends_with: String
+  author: String
+  """
+  All values that are not equal to given value.
+  """
+  author_not: String
+  """
+  All values that are contained in given list.
+  """
+  author_in: [String!]
+  """
+  All values that are not contained in given list.
+  """
+  author_not_in: [String!]
+  """
+  All values less than the given value.
+  """
+  author_lt: String
+  """
+  All values less than or equal the given value.
+  """
+  author_lte: String
+  """
+  All values greater than the given value.
+  """
+  author_gt: String
+  """
+  All values greater than or equal the given value.
+  """
+  author_gte: String
+  """
+  All values containing the given string.
+  """
+  author_contains: String
+  """
+  All values not containing the given string.
+  """
+  author_not_contains: String
+  """
+  All values starting with the given string.
+  """
+  author_starts_with: String
+  """
+  All values not starting with the given string.
+  """
+  author_not_starts_with: String
+  """
+  All values ending with the given string.
+  """
+  author_ends_with: String
+  """
+  All values not ending with the given string.
+  """
+  author_not_ends_with: String
+  date: DateTime
+  """
+  All values that are not equal to given value.
+  """
+  date_not: DateTime
+  """
+  All values that are contained in given list.
+  """
+  date_in: [DateTime!]
+  """
+  All values that are not contained in given list.
+  """
+  date_not_in: [DateTime!]
+  """
+  All values less than the given value.
+  """
+  date_lt: DateTime
+  """
+  All values less than or equal the given value.
+  """
+  date_lte: DateTime
+  """
+  All values greater than the given value.
+  """
+  date_gt: DateTime
+  """
+  All values greater than or equal the given value.
+  """
+  date_gte: DateTime
+  message: String
+  """
+  All values that are not equal to given value.
+  """
+  message_not: String
+  """
+  All values that are contained in given list.
+  """
+  message_in: [String!]
+  """
+  All values that are not contained in given list.
+  """
+  message_not_in: [String!]
+  """
+  All values less than the given value.
+  """
+  message_lt: String
+  """
+  All values less than or equal the given value.
+  """
+  message_lte: String
+  """
+  All values greater than the given value.
+  """
+  message_gt: String
+  """
+  All values greater than or equal the given value.
+  """
+  message_gte: String
+  """
+  All values containing the given string.
+  """
+  message_contains: String
+  """
+  All values not containing the given string.
+  """
+  message_not_contains: String
+  """
+  All values starting with the given string.
+  """
+  message_starts_with: String
+  """
+  All values not starting with the given string.
+  """
+  message_not_starts_with: String
+  """
+  All values ending with the given string.
+  """
+  message_ends_with: String
+  """
+  All values not ending with the given string.
+  """
+  message_not_ends_with: String
+  url: String
+  """
+  All values that are not equal to given value.
+  """
+  url_not: String
+  """
+  All values that are contained in given list.
+  """
+  url_in: [String!]
+  """
+  All values that are not contained in given list.
+  """
+  url_not_in: [String!]
+  """
+  All values less than the given value.
+  """
+  url_lt: String
+  """
+  All values less than or equal the given value.
+  """
+  url_lte: String
+  """
+  All values greater than the given value.
+  """
+  url_gt: String
+  """
+  All values greater than or equal the given value.
+  """
+  url_gte: String
+  """
+  All values containing the given string.
+  """
+  url_contains: String
+  """
+  All values not containing the given string.
+  """
+  url_not_contains: String
+  """
+  All values starting with the given string.
+  """
+  url_starts_with: String
+  """
+  All values not starting with the given string.
+  """
+  url_not_starts_with: String
+  """
+  All values ending with the given string.
+  """
+  url_ends_with: String
+  """
+  All values not ending with the given string.
+  """
+  url_not_ends_with: String
+  chromiumSource: ChromiumSourceWhereInput
+  builds_every: BuildWhereInput
+  builds_some: BuildWhereInput
+  builds_none: BuildWhereInput
+}
+
+input CommitWhereUniqueInput {
+  id: ID
+}
+
+scalar DateTime
+
+"""
+The `Long` scalar type represents non-fractional signed whole numeric values.
+Long can represent values between -(2^63) and 2^63 - 1.
+"""
+scalar Long
+
+type Mutation {
+  createChromiumSource(data: ChromiumSourceCreateInput!): ChromiumSource!
+  createCommit(data: CommitCreateInput!): Commit!
+  createBuild(data: BuildCreateInput!): Build!
+  updateChromiumSource(data: ChromiumSourceUpdateInput!, where: ChromiumSourceWhereUniqueInput!): ChromiumSource
+  updateCommit(data: CommitUpdateInput!, where: CommitWhereUniqueInput!): Commit
+  updateBuild(data: BuildUpdateInput!, where: BuildWhereUniqueInput!): Build
+  deleteChromiumSource(where: ChromiumSourceWhereUniqueInput!): ChromiumSource
+  deleteCommit(where: CommitWhereUniqueInput!): Commit
+  deleteBuild(where: BuildWhereUniqueInput!): Build
+  upsertChromiumSource(where: ChromiumSourceWhereUniqueInput!, create: ChromiumSourceCreateInput!, update: ChromiumSourceUpdateInput!): ChromiumSource!
+  upsertCommit(where: CommitWhereUniqueInput!, create: CommitCreateInput!, update: CommitUpdateInput!): Commit!
+  upsertBuild(where: BuildWhereUniqueInput!, create: BuildCreateInput!, update: BuildUpdateInput!): Build!
+  updateManyChromiumSources(data: ChromiumSourceUpdateInput!, where: ChromiumSourceWhereInput): BatchPayload!
+  updateManyCommits(data: CommitUpdateInput!, where: CommitWhereInput): BatchPayload!
+  updateManyBuilds(data: BuildUpdateInput!, where: BuildWhereInput): BatchPayload!
+  deleteManyChromiumSources(where: ChromiumSourceWhereInput): BatchPayload!
+  deleteManyCommits(where: CommitWhereInput): BatchPayload!
+  deleteManyBuilds(where: BuildWhereInput): BatchPayload!
+}
+
+enum MutationType {
+  CREATED
+  UPDATED
+  DELETED
+}
+
+"""
+An object with an ID
+"""
+interface Node {
+  """
+  The id of the object.
+  """
+  id: ID!
+}
+
+"""
+Information about pagination in a connection.
+"""
+type PageInfo {
+  """
+  When paginating forwards, are there more items?
+  """
+  hasNextPage: Boolean!
+  """
+  When paginating backwards, are there more items?
+  """
+  hasPreviousPage: Boolean!
+  """
+  When paginating backwards, the cursor to continue.
+  """
+  startCursor: String
+  """
+  When paginating forwards, the cursor to continue.
+  """
+  endCursor: String
+}
+
 type Query {
-  posts(where: PostWhereInput, orderBy: PostOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Post]!
-  post(where: PostWhereUniqueInput!): Post
-  postsConnection(where: PostWhereInput, orderBy: PostOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): PostConnection!
+  chromiumSources(where: ChromiumSourceWhereInput, orderBy: ChromiumSourceOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [ChromiumSource]!
+  commits(where: CommitWhereInput, orderBy: CommitOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Commit]!
+  builds(where: BuildWhereInput, orderBy: BuildOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Build]!
+  chromiumSource(where: ChromiumSourceWhereUniqueInput!): ChromiumSource
+  commit(where: CommitWhereUniqueInput!): Commit
+  build(where: BuildWhereUniqueInput!): Build
+  chromiumSourcesConnection(where: ChromiumSourceWhereInput, orderBy: ChromiumSourceOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): ChromiumSourceConnection!
+  commitsConnection(where: CommitWhereInput, orderBy: CommitOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): CommitConnection!
+  buildsConnection(where: BuildWhereInput, orderBy: BuildOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): BuildConnection!
   """
   Fetches an object given its ID
   """
@@ -372,5 +1644,7 @@ type Query {
 }
 
 type Subscription {
-  post(where: PostSubscriptionWhereInput): PostSubscriptionPayload
+  chromiumSource(where: ChromiumSourceSubscriptionWhereInput): ChromiumSourceSubscriptionPayload
+  commit(where: CommitSubscriptionWhereInput): CommitSubscriptionPayload
+  build(where: BuildSubscriptionWhereInput): BuildSubscriptionPayload
 }

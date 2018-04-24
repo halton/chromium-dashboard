@@ -1,6 +1,32 @@
-type Post {
+type ChromiumSource @model {
   id: ID! @unique
-  isPublished: Boolean! @default(value: false)
-  title: String!
-  text: String!
+  url: String! @default(value: "")
+  branch: String! @default(value: "master")
+  beginWith: String
+  commits: [Commit!]! @relation(name: "ChromiumSourceOnCommit")
+}
+
+type Commit @model {
+  id: ID! @unique
+  revision: String!
+  author: String
+  date: DateTime
+  message: String
+  url: String!
+  chromiumSource: ChromiumSource @relation(name: "ChromiumSourceOnCommit")
+  builds: [Build!]! @relation(name: "CommitOnBuild")
+}
+
+type Build @model {
+  id: ID! @unique
+  name: String!
+  succeed: Boolean!
+  date: DateTime!
+  duration: Int
+  targetCpu: String!
+  targetOs: String!
+  gnArgs: String!
+  logUrl: String
+  downloadUrl: String
+  commit: Commit @relation(name: "CommitOnBuild")
 }
