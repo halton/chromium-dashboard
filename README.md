@@ -12,31 +12,75 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-Install [Node.js](https://nodejs.org/en/), we suggest to use use [NVM](https://github.com/creationix/nvm) for handy.
+* [Node.js](https://nodejs.org/en/), we suggest to use use [NVM](https://github.com/creationix/nvm) for handy.
+* [Docker CE](https://www.docker.com/community-edition) and do below configurations
+ - [Manager docker for non-root user](https://docs.docker.com/install/linux/linux-postinstall/#manage-docker-as-a-non-root-user)
+ - [Use proxy](https://docs.docker.com/network/proxy/)
+ - `docker login` (register on https://hub.docker.com if you do not have)
+* [Docker Compose](https://docs.docker.com/compose/)(1.11 above)
+* [Prisma](https://www.prisma.io/)
+```
+npm install -g prisma
+```
 
 ### master Side
-1. Install MongoDB with instruction at https://docs.mongodb.com/manual/tutorial/
-2. Start MongoDB server
+3.  Start GraphQL server
 ```
 cd master
-mkdir data
-mongod --dbpath=data
-```
-3. Start GraphQL server
-```
-cd master
-npm install
-npm run start
+prisma delpoy (long wait, it will pull docker images and config)
+prisma playground
 ```
 
 4. Test query
-Use browser to visit http://localhost:4000/graphql or
+
+Use browser to visit http://localhost:3000/playground, paste below and Ctrl-Enter
+```
+query {
+  chromiumSources {
+    id
+    url
+    branch
+    beginWith
+  }
+}
+```
+
+Or
 ```
  curl \
    -X POST \
    -H "Content-Type: application/json" \
-   --data '{ "query": "query { buildbots }" }' \
-   http://localhost:4000/graphql
+   --data '{ "query": "query { chromiumSources { url branch beginWith } }" }' \
+   http://localhost:4466/chromium-dashboard-master/dev
+
+```
+
+5. Test mutation
+Use browser to visit http://localhost:3000/playground, paste below and Ctrl-Enter
+```
+mutation {
+  createChromiumSource (
+    data : {
+      url: "https://github.com/otcshare/chromium-src"
+      branch: "webml"
+      beginWith: "ddccd3f6dba62870a038ecb7d68b28038fcbe5d9"
+    }
+  ) {
+    id
+    url
+    branch
+    beginWith
+  }
+}
+```
+
+Or
+```
+ curl \
+   -X POST \
+   -H "Content-Type: application/json" \
+   --data '{ "query": "mutation { createChromiumSource(data: { url: \"https://github.com/otcshare/chromium-src\" }) { id } } " }' \
+   http://localhost:4466/chromium-dashboard-master/dev
 
 ```
 
