@@ -1,9 +1,40 @@
+enum BuildStatus {
+  SUCCEED
+  FAIL
+  NOT_START
+  BUILDING
+}
+
 type ChromiumSource @model {
   id: ID! @unique
-  url: String! @default(value: "")
+  url: String!
   branch: String! @default(value: "master")
   beginWith: String
   commits: [Commit!]! @relation(name: "ChromiumSourceOnCommit")
+  slaveConfs: [SlaveConf!]! @relation(name: "ChromiumSourceOnSlaveConf")
+}
+
+type SlaveConf @model {
+  id: ID! @unique
+  name: String!
+  targetCpu: String!
+  targetOs: String!
+  gnArgs: String
+  cleanBuild: Boolean! @default(value: false)
+  logLevel: String @default(value: "info")
+  archiveConf: ArchiveConf @relation(name: "SlaveConfOnArchiveConf")
+  chromiumSource: ChromiumSource @relation(name: "ChromiumSourceOnSlaveConf")
+  build: Build @relation(name: "BuildOnSlaveConf")
+}
+
+type ArchiveConf @model {
+  id: ID! @unique
+  type: String! @default(value: "ssh")
+  host: String!
+  dir: String!
+  user: String
+  password: String
+  slaveConf: SlaveConf @relation(name: "SlaveConfOnArchiveConf")
 }
 
 type Commit @model {
@@ -20,13 +51,11 @@ type Commit @model {
 type Build @model {
   id: ID! @unique
   name: String!
-  succeed: Boolean!
+  status: BuildStatus!
   date: DateTime!
   duration: Int
-  targetCpu: String!
-  targetOs: String!
-  gnArgs: String!
   logUrl: String
   downloadUrl: String
   commit: Commit @relation(name: "CommitOnBuild")
+  slaveConf: SlaveConf @relation(name: "BuildOnSlaveConf")
 }
