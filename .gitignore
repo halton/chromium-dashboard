@@ -2,6 +2,7 @@
 node_modules
 master/data
 /dist
+/master/.git_pollers_cache
 
 # local env files
 .env.local
