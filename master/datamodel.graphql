@@ -39,7 +39,7 @@ type ArchiveConf @model {
 
 type Commit @model {
   id: ID! @unique
-  revision: String!
+  revision: String! @unique
   author: String
   date: DateTime
   subject: String

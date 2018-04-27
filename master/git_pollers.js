@@ -15,10 +15,9 @@ function createDirectoryIfNotExists(dir) {
   fs.mkdirSync(dir);
 }
 
-async function addCommitToChromiumSource(sourceId, sourceUrl, commitContent) {
+function addCommitToChromiumSource(sourceId, sourceUrl, commitContent) {
   const contents = commitContent.replace(/\"/g, '').split('\n');
 
-  // TODO(halton): Check the existence of the revision
   const revision = contents[0];
   const author = contents[1];
   const date = contents[2];
@@ -47,7 +46,17 @@ async function addCommitToChromiumSource(sourceId, sourceUrl, commitContent) {
     }
   `
 
-  const id = await request(graphQlServer, createCommit);
+  request(graphQlServer, createCommit)
+    .then(data => {
+      console.log(`New commit ${revision} created for repo ${sourceUrl}`)
+    })
+    .catch(err => {
+      if (err.toString().includes('A unique constraint would be violated on Commit.')) {
+        console.log(`${revision} already exists for repo ${sourceUrl}`);
+      } else {
+        console.log(err);
+      }
+    });
 }
 
 async function createOrUpdateGitPollers() {
@@ -83,8 +92,6 @@ async function createOrUpdateGitPollers() {
         gw.unwatch(result.config);
       } else {
         if (result.changed) {
-          console.log(`New change at ${result.config.path}\n`);
-
           gitP(repoDir).show(['--format="%H%n%aN <%aE>%n%cI%n%s"', '--no-patch'])
             .then(content => {
               addCommitToChromiumSource(data.chromiumSources[i].id,
