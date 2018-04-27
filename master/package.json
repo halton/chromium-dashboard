@@ -14,6 +14,7 @@
   "author": "Halton Huo <halton.huo@gmail.com>",
   "license": "Apache-2.0",
   "dependencies": {
+    "git-repo-watch": "^1.0.0",
     "graphql-request": "^1.5.1",
     "simple-git": "^1.92.0"
   }
