@@ -42,7 +42,7 @@ type Commit @model {
   revision: String!
   author: String
   date: DateTime
-  message: String
+  subject: String
   url: String!
   chromiumSource: ChromiumSource @relation(name: "ChromiumSourceOnCommit")
   builds: [Build!]! @relation(name: "CommitOnBuild")

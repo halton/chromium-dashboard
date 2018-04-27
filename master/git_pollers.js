@@ -8,12 +8,46 @@ const { request } = require('graphql-request');
 
 const graphQlServer = 'http://localhost:4466/chromium-dashboard-master/dev';
 const pollersDir = path.join(__dirname, '.git_pollers_cache');
-const repoUpdateInterval = 5 ; // 5 minutes
 
 function createDirectoryIfNotExists(dir) {
   if (fs.existsSync(dir)) return;
 
   fs.mkdirSync(dir);
+}
+
+async function addCommitToChromiumSource(sourceId, sourceUrl, commitContent) {
+  const contents = commitContent.replace(/\"/g, '').split('\n');
+
+  // TODO(halton): Check the existence of the revision
+  const revision = contents[0];
+  const author = contents[1];
+  const date = contents[2];
+  const subject = contents[3];
+  const url = `${sourceUrl}/commit/${revision}`;
+
+  const createCommit = `
+    mutation {
+      createCommit(
+       data:{
+          revision: "${revision}"
+          author: "${author}"
+          date: "${date}"
+          subject: "${subject}"
+          url: "${url}"
+          chromiumSource: {
+            connect: {
+              id: "${sourceId}"
+            }
+          }
+
+        }
+      ) {
+        id
+      }
+    }
+  `
+
+  const id = await request(graphQlServer, createCommit);
 }
 
 async function createOrUpdateGitPollers() {
@@ -38,7 +72,7 @@ async function createOrUpdateGitPollers() {
     const gw = new GitWatcher();
     gw.watch({
       path: repoDir,
-      poll: repoUpdateInterval,
+      poll: 5 * 60, // 5 mins
       remote: 'origin',
       branch: data.chromiumSources[i].branch,
       strict: true
@@ -51,8 +85,12 @@ async function createOrUpdateGitPollers() {
         if (result.changed) {
           console.log(`New change at ${result.config.path}\n`);
 
-          gitP(repoDir).show()
-            .then(content => console.log(content))
+          gitP(repoDir).show(['--format="%H%n%aN <%aE>%n%cI%n%s"', '--no-patch'])
+            .then(content => {
+              addCommitToChromiumSource(data.chromiumSources[i].id,
+                                        data.chromiumSources[i].url,
+                                        content)
+            })
             .catch(err => console.log(err));
         } else {
           console.log(`No change at ${result.config.path}\n`);
